@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Report Mensile - Multi-Store Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-calendar-alt me-2"></i>Report Mensile</h2>
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Torna ai Report
+        </a>
+    </div>
+
+    <!-- Selezione Periodo -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="month" class="form-label">Mese</label>
+                    <select class="form-select" id="month" name="month">
+                        {% for m in months %}
+                        <option value="{{ m }}" {{ 'selected' if month == m }}>
+                            {% set month_names = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'] %}{{ month_names[m-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="year" class="form-label">Anno</label>
+                    <select class="form-select" id="year" name="year">
+                        {% for y in years %}
+                        <option value="{{ y }}" {{ 'selected' if year == y }}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calendar me-1"></i>Aggiorna Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Intestazione Report -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>Report {{ month_name }} {{ year }}</h3>
+                    <h5 class="text-muted">{{ current_store_name }}</h5>
+                    <p class="text-muted">Generato oggi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metriche Principali -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4>{{ sales_summary.total_sales or 0 }}</h4>
+                    <p class="mb-0">Vendite Totali</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4>€{{ "%.2f"|format(sales_summary.total_revenue or 0) }}</h4>
+                    <p class="mb-0">Fatturato Totale</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4>{{ new_customers }}</h4>
+                    <p class="mb-0">Nuovi Clienti</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4>{{ active_contracts }}</h4>
+                    <p class="mb-0">Contratti Attivi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendite per Tipo di Servizio -->
+    {% if sales_by_service %}
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Vendite per Tipo di Servizio</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tipo di Servizio</th>
+                                    <th>Numero Vendite</th>
+                                    <th>Fatturato Totale</th>
+                                    <th>Vendita Media</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in sales_by_service %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ get_service_display_name(service.service_type) if get_service_display_name else service.service_type.title() }}</span>
+                                    </td>
+                                    <td>{{ service.count }}</td>
+                                    <td class="text-success">€{{ "%.2f"|format(service.revenue) }}</td>
+                                    <td>€{{ "%.2f"|format(service.revenue / service.count) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Distribuzione Fatturato</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="serviceRevenueChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Performance Insights -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Performance Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Sales Performance</h6>
+                            {% if sales_summary.total_sales and sales_summary.total_sales > 0 %}
+                            <p class="text-muted">
+                                Average sale value: <strong>€{{ "%.2f"|format((sales_summary.total_revenue or 0) / sales_summary.total_sales) }}</strong>
+                            </p>
+                            {% if sales_by_service %}
+                            <p class="text-muted">
+                                Top performing service: 
+                                <strong>{{ sales_by_service[0].service_type.title() }}</strong> 
+                                ({{ sales_by_service[0].count }} sales)
+                            </p>
+                            {% endif %}
+                            {% else %}
+                            <p class="text-muted">No sales data available for this period.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Customer Acquisition</h6>
+                            {% if new_customers > 0 %}
+                            <p class="text-muted">
+                                New customers acquired: <strong>{{ new_customers }}</strong>
+                            </p>
+                            {% if sales_summary.total_sales and new_customers > 0 %}
+                            <p class="text-muted">
+                                Sales per new customer: <strong>{{ "%.1f"|format(sales_summary.total_sales / new_customers) }}</strong>
+                            </p>
+                            {% endif %}
+                            {% else %}
+                            <p class="text-muted">No new customers acquired this month.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Options -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-download me-2"></i>Export Report Data
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('reports.export_sales', date_from='%04d-%02d-01'|format(year, month), date_to='%04d-%02d-28'|format(year, month)) }}" 
+                               class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-chart-line me-1"></i>Esporta Dati Vendite
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('reports.export_customers') }}" 
+                               class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-users me-1"></i>Esporta Dati Clienti
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('reports.export_contracts') }}" 
+                               class="btn btn-outline-warning w-100 mb-2">
+                                <i class="fas fa-file-contract me-1"></i>Esporta Dati Contratti
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if sales_by_service %}
+<script>
+// Service Revenue Chart
+const serviceRevenueCtx = document.getElementById('serviceRevenueChart').getContext('2d');
+const serviceRevenueChart = new Chart(serviceRevenueCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ sales_by_service | map(attribute='service_type') | map('title') | list | tojson }},
+        datasets: [{
+            data: {{ sales_by_service | map(attribute='revenue') | list | tojson }},
+            backgroundColor: [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + ': €' + context.parsed.toFixed(2);
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

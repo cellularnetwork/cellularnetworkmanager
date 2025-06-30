@@ -1,0 +1,38 @@
+<!-- Store Indicator Component for Owner -->
+{% if current_user.role == 'owner' and current_store_name %}
+<div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+    <div class="d-flex align-items-center">
+        <div class="me-3">
+            <i class="fas fa-info-circle fa-lg"></i>
+        </div>
+        <div class="flex-grow-1">
+            <strong>Stai visualizzando i dati del negozio:</strong> {{ current_store_name }}
+            <br>
+            <small class="text-muted">
+                Tutti i dati mostrati (clienti, vendite, obiettivi) sono specifici per questo negozio.
+            </small>
+        </div>
+        <div class="ms-3">
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-exchange-alt me-1"></i>Cambia Negozio
+                </button>
+                <ul class="dropdown-menu">
+                    {% for store in all_stores %}
+                    <li>
+                        <a class="dropdown-item {% if store.name == current_store_name %}active{% endif %}" 
+                           href="{{ url_for('dashboard.switch_store', store_id=store.id) }}">
+                            <i class="fas fa-store me-2"></i>{{ store.name }}
+                            {% if store.name == current_store_name %}
+                                <i class="fas fa-check ms-2 text-success"></i>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}

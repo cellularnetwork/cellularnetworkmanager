@@ -1,1 +1,198 @@
-{% extends 'base.html' %}{% block content %}<h2>Obiettivi</h2>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Obiettivi - Gestione Multi-Negozio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-bullseye me-2"></i>Obiettivi di Vendita
+            <small class="text-muted">{{ current_month }}/{{ current_year }}</small>
+        </h2>
+        <div>
+            <a href="{{ url_for('goals.new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Nuovo Obiettivo
+            </a>
+        </div>
+    </div>
+
+    {% if goals %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Obiettivo</th>
+                            <th>Mese</th>
+                            <th>Anno</th>
+                            <th class="text-end">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for goal in goals %}
+                        <tr>
+                            <td>{{ get_service_display_name(goal.category) }}</td>
+                            <td>{{ "%.0f"|format(goal.target_amount) }} punti</td>
+                            <td>{{ goal.month }}/{{ goal.year }}</td>
+                            <td>{{ goal.year }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('goals.edit', id=goal.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('goals.delete', id=goal.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                            onclick="return confirm('Sei sicuro di voler eliminare questo obiettivo?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {% if current_user.role == 'owner' %}
+                        <small class="text-muted d-block">
+                            <i class="fas fa-store me-1"></i>Negozio {{ goal_data.goal.store.name }}
+                        </small>
+                        {% endif %}
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>{{ current_month }}/{{ current_year }}
+                        </small>
+                    </div>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h5 class="mb-0 text-primary">{{ "%.0f"|format(goal_data.current_amount) }} punti</h5>
+                                <small class="text-muted">Attuale</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="mb-0 text-success">{{ "%.0f"|format(goal_data.goal.target_amount) }} punti</h5>
+                            <small class="text-muted">Obiettivo</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Progresso</small>
+                            <small class="fw-bold">{{ "%.1f"|format(goal_data.progress_percentage) }}%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar {% if goal_data.achieved %}bg-success{% else %}bg-primary{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ goal_data.progress_percentage }}%">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not goal_data.achieved %}
+                    <div class="alert alert-info py-2 mb-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Mancano <strong>€{{ "%.0f"|format(goal_data.remaining) }}</strong> per raggiungere l'obiettivo
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('goals.edit', id=goal_data.goal.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i>Modifica
+                        </a>
+                        <form method="POST" action="{{ url_for('goals.delete', id=goal_data.goal.id) }}" 
+                              class="d-inline" onsubmit="return confirm('Sei sicuro di voler eliminare questo obiettivo?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash me-1"></i>Elimina
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Riepilogo mensile -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Riepilogo Obiettivi {{ current_month }}/{{ current_year }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">{{ goals|length }}</h4>
+                            <p class="text-muted mb-0">Obiettivi Totali</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">{{ goals|selectattr('achieved')|list|length }}</h4>
+                            <p class="text-muted mb-0">Obiettivi Raggiunti</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ (goals|rejectattr('achieved')|list|length) }}</h4>
+                            <p class="text-muted mb-0">In Corso</p>
+                        </div>
+                        <div class="col-md-3">
+                            {% set completion_rate = (goals|selectattr('achieved')|list|length / goals|length * 100) if goals|length > 0 else 0 %}
+                            <h4 class="text-info">{{ "%.0f"|format(completion_rate) }}%</h4>
+                            <p class="text-muted mb-0">Tasso Completamento</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Stato vuoto -->
+    <div class="text-center py-5">
+        <i class="fas fa-bullseye fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">Nessun obiettivo impostato</h4>
+        <p class="text-muted mb-4">Inizia a impostare obiettivi di vendita per tracciare le performance del tuo negozio.</p>
+        <a href="{{ url_for('goals.new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Crea il Primo Obiettivo
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-refresh progress ogni 30 secondi
+setInterval(function() {
+    // Aggiorna solo le barre di progresso senza ricaricare la pagina
+    fetch(`{{ url_for('goals.api_progress', month=current_month, year=current_year) }}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(goal => {
+                const progressBar = document.querySelector(`[data-goal-id="${goal.id}"] .progress-bar`);
+                const percentageText = document.querySelector(`[data-goal-id="${goal.id}"] .progress-percentage`);
+                const currentAmount = document.querySelector(`[data-goal-id="${goal.id}"] .current-amount`);
+                
+                if (progressBar) {
+                    progressBar.style.width = goal.progress_percentage + '%';
+                    progressBar.className = `progress-bar ${goal.achieved ? 'bg-success' : 'bg-primary'}`;
+                }
+                if (percentageText) {
+                    percentageText.textContent = goal.progress_percentage.toFixed(1) + '%';
+                }
+                if (currentAmount) {
+                    currentAmount.textContent = '€' + Math.round(goal.current_amount);
+                }
+            });
+        })
+        .catch(error => console.log('Errore nell\'aggiornamento automatico:', error));
+}, 30000);
+</script>
+{% endblock %}

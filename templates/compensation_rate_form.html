@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Modifica' if rate else 'Nuovo' }} Compenso - Gestione Multi-Negozio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-coins me-2"></i>
+                        {{ 'Modifica Compenso' if rate else 'Nuovo Compenso' }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="service_type" class="form-label">Tipo Servizio *</label>
+                                <select class="form-select" id="service_type" name="service_type" required>
+                                    <option value="">Seleziona Servizio</option>
+                                    {% for service in service_types %}
+                                    {% if service not in ['prodotto_esterno', 'accessorio', 'telefono', 'tablet', 'smartwatch', 'cuffie', 'caricabatterie', 'cover_custodia', 'pellicola_protettiva', 'powerbank', 'supporti_auto', 'altri_accessori'] %}
+                                    <option value="{{ service }}" {{ 'selected' if rate and rate.service_type == service }}>
+                                        {{ get_service_display_name(service) }}
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="manager_username" class="form-label">Manager *</label>
+                                <input type="text" class="form-control" id="manager_username" name="manager_username" 
+                                       value="{{ rate.manager_username if rate else current_user.username }}" 
+                                       {{ 'readonly' if current_user.role == 'manager' }} required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="base_rate" class="form-label">Compenso Base (€) *</label>
+                                <input type="number" class="form-control" id="base_rate" name="base_rate" 
+                                       step="0.01" min="0" value="{{ rate.base_rate if rate }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="threshold" class="form-label">Soglia per Bonus *</label>
+                                <input type="number" class="form-control" id="threshold" name="threshold" 
+                                       min="1" value="{{ rate.threshold if rate }}" required>
+                                <div class="form-text">Numero di vendite necessarie per attivare il bonus</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bonus_rate" class="form-label">Compenso Bonus (€) *</label>
+                                <input type="number" class="form-control" id="bonus_rate" name="bonus_rate" 
+                                       step="0.01" min="0" value="{{ rate.bonus_rate if rate }}" required>
+                                <div class="form-text">Compenso aggiuntivo per ogni vendita oltre la soglia</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="month" class="form-label">Mese *</label>
+                                <select class="form-select" id="month" name="month" required>
+                                    {% set month_names = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'] %}
+                                    {% for i in range(1, 13) %}
+                                    <option value="{{ i }}" {{ 'selected' if rate and rate.month == i }}>
+                                        {{ month_names[i-1] }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="year" class="form-label">Anno *</label>
+                                <select class="form-select" id="year" name="year" required>
+                                    {% for year in range(2024, 2030) %}
+                                    <option value="{{ year }}" {{ 'selected' if rate and rate.year == year }}>
+                                        {{ year }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Come funziona:</strong> Il compenso base viene pagato per ogni vendita. Raggiunta la soglia, ogni vendita aggiuntiva riceve anche il bonus.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('compensation.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Indietro
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>{{ 'Aggiorna' if rate else 'Crea' }} Compenso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
