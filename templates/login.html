@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Accesso - Gestione Multi-Negozio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-store fa-3x text-primary mb-3"></i>
+                        <h4 class="card-title">Accesso al Sistema</h4>
+                        <p class="text-muted">Inserisci le tue credenziali per accedere</p>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nome Utente</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Accedi
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <strong>Account Disponibili:</strong><br>
+                            • Titolare: username=<code>titolare</code>, password=<code>titolare123</code><br>
+                            • Cossa: username=<code>manager_cossa</code>, password=<code>cossa123</code><br>
+                            • Avigliana: username=<code>manager_avigliana</code>, password=<code>avigliana123</code><br>
+                            • Grappa: username=<code>manager_grappa</code>, password=<code>grappa123</code>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
