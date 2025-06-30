@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Magazzino - {{ store_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-boxes me-2"></i>Magazzino - {{ store_name }}</h2>
+                <a href="{{ url_for('inventory.new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Aggiungi Prodotto
+                </a>
+            </div>
+
+            <!-- Statistiche Magazzino -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-cube fa-2x me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-0">{{ stats.total_items }}</h5>
+                                    <p class="card-text">Prodotti Totali</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-layer-group fa-2x me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-0">{{ stats.total_quantity }}</h5>
+                                    <p class="card-text">Quantità Totale</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-euro-sign fa-2x me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-0">€{{ "%.2f"|format(stats.total_value) }}</h5>
+                                    <p class="card-text">Valore Totale</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                                <div>
+                                    <h5 class="card-title mb-0">{{ stats.low_stock_count }}</h5>
+                                    <p class="card-text">Scorte Basse</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ricerca e Export -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Cerca prodotti in tutte le colonne...">
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-secondary w-100" onclick="clearSearch()">
+                        <i class="fas fa-times"></i> Pulisci Ricerca
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('inventory.export_low_stock') }}" class="btn btn-warning w-100" target="_blank">
+                        <i class="fas fa-download"></i> Export Scorte Basse
+                    </a>
+                </div>
+            </div>
+
+            <!-- Layout a 4 Colonne per Brand -->
+            <div class="row">
+                <!-- Colonna VODAFONE -->
+                <div class="col-md-3">
+                    <div class="card border-danger h-100">
+                        <div class="card-header bg-danger text-white text-center">
+                            <h5 class="mb-1"><i class="fas fa-mobile-alt"></i> VODAFONE</h5>
+                            <small id="vodafone-count">0 prodotti</small>
+                        </div>
+                        <div class="card-body p-2" style="max-height: 700px; overflow-y: auto;">
+                            <div id="vodafone-products"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonna WIND -->
+                <div class="col-md-3">
+                    <div class="card border-warning h-100">
+                        <div class="card-header bg-warning text-dark text-center">
+                            <h5 class="mb-1"><i class="fas fa-wind"></i> WIND</h5>
+                            <small id="wind-count">0 prodotti</small>
+                        </div>
+                        <div class="card-body p-2" style="max-height: 700px; overflow-y: auto;">
+                            <div id="wind-products"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonna FASTWEB -->
+                <div class="col-md-3">
+                    <div class="card border-primary h-100">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h5 class="mb-1"><i class="fas fa-wifi"></i> FASTWEB</h5>
+                            <small id="fastweb-count">0 prodotti</small>
+                        </div>
+                        <div class="card-body p-2" style="max-height: 700px; overflow-y: auto;">
+                            <div id="fastweb-products"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonna NO BRAND -->
+                <div class="col-md-3">
+                    <div class="card border-secondary h-100">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <h5 class="mb-1"><i class="fas fa-box"></i> NO BRAND</h5>
+                            <small id="nobrand-count">0 prodotti</small>
+                        </div>
+                        <div class="card-body p-2" style="max-height: 700px; overflow-y: auto;">
+                            <div id="nobrand-products"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if not inventory_items %}
+            <div class="text-center py-5 mt-4">
+                <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Magazzino vuoto</h4>
+                <p class="text-muted">Non ci sono prodotti nel magazzino di questo negozio.</p>
+                <a href="{{ url_for('inventory.new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Aggiungi primo prodotto
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal per Aggiustamento Scorte -->
+<div class="modal fade" id="stockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Aggiusta Scorte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="stockForm">
+                    <input type="hidden" id="itemId">
+                    <div class="mb-3">
+                        <label class="form-label">Prodotto:</label>
+                        <span id="productName" class="fw-bold"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Scorte Attuali:</label>
+                        <span id="currentStock" class="fw-bold"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adjustment" class="form-label">Aggiustamento (+/-)</label>
+                        <input type="number" class="form-control" id="adjustment" required>
+                        <div class="form-text">Usa numeri positivi per aggiungere, negativi per rimuovere</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Motivo</label>
+                        <input type="text" class="form-control" id="reason" placeholder="Motivo dell'aggiustamento">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-primary" onclick="submitStockAdjustment()">Salva</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dati prodotti dal server
+const allProducts = {{ inventory_items|tojson }};
+
+// Funzione per organizzare prodotti per brand
+function organizeProductsByBrand() {
+    const brandCategories = {
+        'vodafone': [],
+        'wind': [],
+        'fastweb': [],
+        'nobrand': []
+    };
+    
+    allProducts.forEach(product => {
+        const brand = (product.brand || '').toLowerCase().trim();
+        
+        if (brand.includes('vodafone')) {
+            brandCategories.vodafone.push(product);
+        } else if (brand.includes('wind')) {
+            brandCategories.wind.push(product);
+        } else if (brand.includes('fastweb')) {
+            brandCategories.fastweb.push(product);
+        } else {
+            brandCategories.nobrand.push(product);
+        }
+    });
+    
+    // Ordina alfabeticamente per nome prodotto
+    Object.keys(brandCategories).forEach(brand => {
+        brandCategories[brand].sort((a, b) => 
+            (a.product_name || '').localeCompare(b.product_name || '')
+        );
+    });
+    
+    return brandCategories;
+}
+
+// Funzione per creare card prodotto
+function createProductCard(product) {
+    const stockBadge = product.quantity <= 5 ? 'bg-danger' : 
+                      product.quantity <= 10 ? 'bg-warning' : 'bg-success';
+    
+    const stockStatus = product.quantity === 0 ? 'Esaurito' :
+                       product.quantity <= 5 ? 'Scorte Basse' : 'Disponibile';
+    
+    return `
+        <div class="card mb-2 product-card" data-product-name="${product.product_name.toLowerCase()}" data-model="${(product.model || '').toLowerCase()}">
+            <div class="card-body p-2">
+                <h6 class="card-title mb-1">${product.product_name}</h6>
+                ${product.model ? `<small class="text-muted d-block">${product.model}</small>` : ''}
+                ${product.device_brand && product.device_brand !== product.brand ? 
+                    `<small class="text-muted d-block">${product.device_brand}</small>` : ''}
+                ${product.color ? `<small class="text-info d-block">${product.color}</small>` : ''}
+                
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="badge ${stockBadge}">${product.quantity}</span>
+                    <strong>€${product.price.toFixed(2)}</strong>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                    <small class="text-muted">${stockStatus}</small>
+                    <small class="text-muted">${product.category || 'N/A'}</small>
+                </div>
+                
+                <div class="btn-group w-100 mt-2" role="group">
+                    <a href="/inventory/edit/${product.id}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-warning" onclick="adjustStock(${product.id}, '${product.product_name}', ${product.quantity})">
+                        <i class="fas fa-adjust"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${product.id}, '${product.product_name}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Funzione per renderizzare prodotti nelle colonne
+function renderProducts(filteredProducts = null) {
+    const productsToRender = filteredProducts || organizeProductsByBrand();
+    
+    // Pulisci contenitori
+    document.getElementById('vodafone-products').innerHTML = '';
+    document.getElementById('wind-products').innerHTML = '';
+    document.getElementById('fastweb-products').innerHTML = '';
+    document.getElementById('nobrand-products').innerHTML = '';
+    
+    // Renderizza prodotti per ogni brand
+    Object.keys(productsToRender).forEach(brand => {
+        const container = document.getElementById(`${brand}-products`);
+        const countElement = document.getElementById(`${brand}-count`);
+        
+        productsToRender[brand].forEach(product => {
+            container.innerHTML += createProductCard(product);
+        });
+        
+        countElement.textContent = `${productsToRender[brand].length} prodotti`;
+        
+        if (productsToRender[brand].length === 0) {
+            container.innerHTML = '<div class="text-center text-muted p-3"><i class="fas fa-box"></i><br>Nessun prodotto</div>';
+        }
+    });
+}
+
+// Funzione di ricerca
+function filterProducts() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    if (!searchTerm) {
+        renderProducts();
+        return;
+    }
+    
+    const organizedProducts = organizeProductsByBrand();
+    const filteredProducts = {};
+    
+    Object.keys(organizedProducts).forEach(brand => {
+        filteredProducts[brand] = organizedProducts[brand].filter(product => 
+            product.product_name.toLowerCase().includes(searchTerm) ||
+            (product.model || '').toLowerCase().includes(searchTerm) ||
+            (product.device_brand || '').toLowerCase().includes(searchTerm) ||
+            (product.color || '').toLowerCase().includes(searchTerm) ||
+            (product.category || '').toLowerCase().includes(searchTerm)
+        );
+    });
+    
+    renderProducts(filteredProducts);
+}
+
+// Funzione per pulire ricerca
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    renderProducts();
+}
+
+// Funzione per aggiustare scorte
+function adjustStock(itemId, productName, currentStock) {
+    document.getElementById('itemId').value = itemId;
+    document.getElementById('productName').textContent = productName;
+    document.getElementById('currentStock').textContent = currentStock;
+    document.getElementById('adjustment').value = '';
+    document.getElementById('reason').value = '';
+    
+    new bootstrap.Modal(document.getElementById('stockModal')).show();
+}
+
+// Funzione per inviare aggiustamento scorte
+function submitStockAdjustment() {
+    const itemId = document.getElementById('itemId').value;
+    const adjustment = document.getElementById('adjustment').value;
+    const reason = document.getElementById('reason').value;
+    
+    if (!adjustment) {
+        alert('Inserisci un valore di aggiustamento');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('adjustment', adjustment);
+    formData.append('reason', reason || 'Aggiustamento manuale');
+    
+    fetch(`/inventory/adjust_stock/${itemId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Errore: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Errore nella richiesta: ' + error);
+    });
+    
+    bootstrap.Modal.getInstance(document.getElementById('stockModal')).hide();
+}
+
+// Funzione per eliminare prodotto
+function deleteProduct(itemId, productName) {
+    if (!confirm(`Sei sicuro di voler eliminare "${productName}"?`)) {
+        return;
+    }
+    
+    fetch(`/inventory/delete/${itemId}`, {
+        method: 'POST'
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Errore nell\'eliminazione del prodotto');
+        }
+    })
+    .catch(error => {
+        alert('Errore nella richiesta: ' + error);
+    });
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    renderProducts();
+    
+    document.getElementById('searchInput').addEventListener('input', filterProducts);
+});
+</script>
+{% endblock %}

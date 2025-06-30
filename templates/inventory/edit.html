@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Modifica Prodotto - Magazzino {{ store_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-edit me-2"></i>Modifica Prodotto - {{ store_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="product_name" class="form-label">Nome Prodotto *</label>
+                                <input type="text" class="form-control" id="product_name" name="product_name" value="{{ item.product_name }}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="category" class="form-label">Categoria</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Seleziona categoria</option>
+                                    <option value="Smartphone" {% if item.category == 'Smartphone' %}selected{% endif %}>Smartphone</option>
+                                    <option value="Accessori" {% if item.category == 'Accessori' %}selected{% endif %}>Accessori</option>
+                                    <option value="SIM" {% if item.category == 'SIM' %}selected{% endif %}>SIM</option>
+                                    <option value="Tablet" {% if item.category == 'Tablet' %}selected{% endif %}>Tablet</option>
+                                    <option value="Modem" {% if item.category == 'Modem' %}selected{% endif %}>Modem</option>
+                                    <option value="Cavi" {% if item.category == 'Cavi' %}selected{% endif %}>Cavi</option>
+                                    <option value="Cover" {% if item.category == 'Cover' %}selected{% endif %}>Cover</option>
+                                    <option value="Caricatori" {% if item.category == 'Caricatori' %}selected{% endif %}>Caricatori</option>
+                                    <option value="Altro" {% if item.category == 'Altro' %}selected{% endif %}>Altro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="brand" class="form-label">Brand Operatore</label>
+                                <select class="form-select" id="brand" name="brand">
+                                    <option value="">Seleziona brand</option>
+                                    <option value="Wind" {% if item.brand == 'Wind' %}selected{% endif %}>Wind</option>
+                                    <option value="Vodafone" {% if item.brand == 'Vodafone' %}selected{% endif %}>Vodafone</option>
+                                    <option value="Fastweb" {% if item.brand == 'Fastweb' %}selected{% endif %}>Fastweb</option>
+                                    <option value="No Brand" {% if item.brand == 'No Brand' %}selected{% endif %}>No Brand</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="device_brand" class="form-label">Marca Dispositivo</label>
+                                <input type="text" class="form-control" id="device_brand" name="device_brand" value="{{ item.device_brand or '' }}" placeholder="Samsung, Apple, Huawei...">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="model" class="form-label">Modello</label>
+                                <input type="text" class="form-control" id="model" name="model" value="{{ item.model or '' }}" placeholder="Galaxy S23, iPhone 15...">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="color" class="form-label">Colore</label>
+                                <input type="text" class="form-control" id="color" name="color" value="{{ item.color or '' }}" placeholder="Nero, Bianco...">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="ram" class="form-label">RAM</label>
+                                <select class="form-select" id="ram" name="ram">
+                                    <option value="">Seleziona RAM</option>
+                                    <option value="2GB" {% if item.ram == '2GB' %}selected{% endif %}>2GB</option>
+                                    <option value="4GB" {% if item.ram == '4GB' %}selected{% endif %}>4GB</option>
+                                    <option value="6GB" {% if item.ram == '6GB' %}selected{% endif %}>6GB</option>
+                                    <option value="8GB" {% if item.ram == '8GB' %}selected{% endif %}>8GB</option>
+                                    <option value="12GB" {% if item.ram == '12GB' %}selected{% endif %}>12GB</option>
+                                    <option value="16GB" {% if item.ram == '16GB' %}selected{% endif %}>16GB</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="storage" class="form-label">Memoria</label>
+                                <select class="form-select" id="storage" name="storage">
+                                    <option value="">Seleziona memoria</option>
+                                    <option value="32GB" {% if item.storage == '32GB' %}selected{% endif %}>32GB</option>
+                                    <option value="64GB" {% if item.storage == '64GB' %}selected{% endif %}>64GB</option>
+                                    <option value="128GB" {% if item.storage == '128GB' %}selected{% endif %}>128GB</option>
+                                    <option value="256GB" {% if item.storage == '256GB' %}selected{% endif %}>256GB</option>
+                                    <option value="512GB" {% if item.storage == '512GB' %}selected{% endif %}>512GB</option>
+                                    <option value="1TB" {% if item.storage == '1TB' %}selected{% endif %}>1TB</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="quantity" class="form-label">Quantità *</label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" value="{{ item.quantity }}" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price" class="form-label">Prezzo (€) *</label>
+                                <input type="number" step="0.01" class="form-control" id="price" name="price" value="{{ item.price }}" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Note</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Note aggiuntive sul prodotto...">{{ item.notes or '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('inventory.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Annulla
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Salva Modifiche
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
