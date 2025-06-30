@@ -1,0 +1,27 @@
+
+body {
+    background-color: #1e1e2f;
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 40px;
+}
+.login-box {
+    background: #2c2f4a;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    margin: auto;
+    box-shadow: 0 0 10px #000;
+}
+input, button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+}
+button {
+    background-color: #5c6bc0;
+    color: white;
+    font-weight: bold;
+}
