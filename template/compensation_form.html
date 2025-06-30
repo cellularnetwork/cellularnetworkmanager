@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if rate else 'Add' }} Compensation Rate - Multi-Store Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        {{ 'Edit Compensation Rate' if rate else 'Add New Compensation Rate' }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            {% if current_user.role == 'owner' %}
+                            <div class="col-md-6 mb-3">
+                                <label for="manager_id" class="form-label">Manager *</label>
+                                <select class="form-select" id="manager_id" name="manager_id" required>
+                                    <option value="">Select Manager</option>
+                                    {% for manager in managers %}
+                                    <option value="{{ manager.id }}" 
+                                            {{ 'selected' if rate and rate.manager_id == manager.id }}>
+                                        {{ manager.username }}
+                                        {% if manager.store %}({{ manager.store.name }}){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="store_id" class="form-label">Store *</label>
+                                <select class="form-select" id="store_id" name="store_id" required>
+                                    <option value="">Select Store</option>
+                                    {% for store in stores %}
+                                    <option value="{{ store.id }}" 
+                                            {{ 'selected' if rate and rate.store_id == store.id }}>
+                                        Store {{ store.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="service_type" class="form-label">Service Type *</label>
+                            <select class="form-select" id="service_type" name="service_type" required>
+                                <option value="">Select Service Type</option>
+                                <option value="electricity" {{ 'selected' if rate and rate.service_type == 'electricity' }}>Electricity</option>
+                                <option value="gas" {{ 'selected' if rate and rate.service_type == 'gas' }}>Gas</option>
+                                <option value="fiber" {{ 'selected' if rate and rate.service_type == 'fiber' }}>Fiber</option>
+                                <option value="mobile" {{ 'selected' if rate and rate.service_type == 'mobile' }}>Mobile</option>
+                                <option value="internet" {{ 'selected' if rate and rate.service_type == 'internet' }}>Internet</option>
+                                <option value="tv" {{ 'selected' if rate and rate.service_type == 'tv' }}>TV</option>
+                                <option value="insurance" {{ 'selected' if rate and rate.service_type == 'insurance' }}>Insurance</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="base_rate" class="form-label">Base Rate (€) *</label>
+                                <input type="number" step="0.01" min="0" class="form-control" 
+                                       id="base_rate" name="base_rate" 
+                                       value="{{ rate.base_rate if rate }}" required
+                                       placeholder="Amount earned per sale">
+                                <small class="text-muted">Amount earned for each sale of this service type</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="threshold" class="form-label">Bonus Threshold *</label>
+                                <input type="number" min="1" class="form-control" 
+                                       id="threshold" name="threshold" 
+                                       value="{{ rate.threshold if rate }}" required
+                                       placeholder="Number of sales">
+                                <small class="text-muted">Number of sales needed to start earning bonus</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bonus_rate" class="form-label">Bonus Rate (€) *</label>
+                                <input type="number" step="0.01" min="0" class="form-control" 
+                                       id="bonus_rate" name="bonus_rate" 
+                                       value="{{ rate.bonus_rate if rate }}" required
+                                       placeholder="Bonus amount per sale">
+                                <small class="text-muted">Additional amount earned per sale after reaching threshold</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="month" class="form-label">Month *</label>
+                                <select class="form-select" id="month" name="month" required>
+                                    {% for m in months %}
+                                    <option value="{{ m }}" {{ 'selected' if (rate and rate.month == m) or (not rate and m == current_month) }}>
+                                        {% if m == 1 %}Gennaio{% elif m == 2 %}Febbraio{% elif m == 3 %}Marzo{% elif m == 4 %}Aprile{% elif m == 5 %}Maggio{% elif m == 6 %}Giugno{% elif m == 7 %}Luglio{% elif m == 8 %}Agosto{% elif m == 9 %}Settembre{% elif m == 10 %}Ottobre{% elif m == 11 %}Novembre{% elif m == 12 %}Dicembre{% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="year" class="form-label">Year *</label>
+                                <select class="form-select" id="year" name="year" required>
+                                    {% for y in years %}
+                                    <option value="{{ y }}" {{ 'selected' if (rate and rate.year == y) or (not rate and y == moment().year()) }}>
+                                        {{ y }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-calculator me-2"></i>Compensation Example</h6>
+                            <p class="mb-2">
+                                If a manager makes <strong>8 sales</strong> with:
+                                <br>• Base Rate: €10.00 • Threshold: 5 • Bonus Rate: €5.00
+                            </p>
+                            <p class="mb-0">
+                                <strong>Calculation:</strong> (5 × €10.00) + (3 × €5.00) = <span class="text-success">€65.00 total</span>
+                            </p>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('compensation.rates') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Rates
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                {{ 'Update Rate' if rate else 'Create Rate' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update example calculation when values change
+document.addEventListener('DOMContentLoaded', function() {
+    const baseRate = document.getElementById('base_rate');
+    const threshold = document.getElementById('threshold');
+    const bonusRate = document.getElementById('bonus_rate');
+    
+    function updateExample() {
+        const base = parseFloat(baseRate.value) || 0;
+        const thresh = parseInt(threshold.value) || 0;
+        const bonus = parseFloat(bonusRate.value) || 0;
+        
+        if (base > 0 && thresh > 0) {
+            const exampleSales = Math.max(thresh + 3, 8);
+            const baseEarnings = Math.min(exampleSales, thresh) * base;
+            const bonusEarnings = Math.max(0, exampleSales - thresh) * bonus;
+            const total = baseEarnings + bonusEarnings;
+            
+            document.querySelector('.alert-info p:last-child').innerHTML = 
+                `<strong>Calculation:</strong> (${Math.min(exampleSales, thresh)} × €${base.toFixed(2)}) + (${Math.max(0, exampleSales - thresh)} × €${bonus.toFixed(2)}) = <span class="text-success">€${total.toFixed(2)} total</span>`;
+        }
+    }
+    
+    [baseRate, threshold, bonusRate].forEach(input => {
+        input.addEventListener('input', updateExample);
+    });
+});
+</script>
+{% endblock %}
