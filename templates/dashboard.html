@@ -1,6 +1,11 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1>Benvenuto, {{ current_user.username }}</h1>
-<p>Gestione completa per più negozi.</p>
+<h1>Dashboard {{ current_user.store.name }}</h1>
+<div class="cards">
+    <div class="card purple">Ricavi Giornalieri<br><b>€0.00</b></div>
+    <div class="card green">Ricavi Mensili<br><b>€0.00</b></div>
+    <div class="card blue">Clienti Totali<br><b>{{ client_count }}</b></div>
+    <div class="card gold">Active Contracts<br><b>{{ contract_count }}</b></div>
+</div>
 {% endblock %}
