@@ -247,4 +247,4 @@ def delete(id):
         customer = store_session.query(Customer).filter(Customer.id == id).first()
         if not customer:
             flash('Cliente non trovato!', 'error')
-            return redirect(url_for('cust_
+            return redirect(url_for('customers.index'))
