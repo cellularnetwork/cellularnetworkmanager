@@ -1,0 +1,133 @@
+/* Custom styles for Cellular Network Manager */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--dark-color);
+    color: #ffffff;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+    background-color: #2d3748;
+}
+
+.card-header {
+    background-color: #4a5568;
+    border-bottom: 1px solid #4a5568;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.table-dark {
+    --bs-table-bg: #2d3748;
+    --bs-table-striped-bg: #4a5568;
+}
+
+.form-control, .form-select {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: #ffffff;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #4a5568;
+    border-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--danger-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stats-card h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.stats-card p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.alert {
+    border: none;
+    border-radius: 10px;
+}
+
+.pagination .page-link {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: #ffffff;
+}
+
+.pagination .page-link:hover {
+    background-color: #2d3748;
+    border-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
