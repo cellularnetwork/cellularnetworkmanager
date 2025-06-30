@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Report Giornaliero{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-calendar-day text-success me-2"></i>
+            Report Giornaliero
+        </h2>
+        <a href="{{ url_for('reports.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Torna ai Report
+        </a>
+    </div>
+
+    <!-- Selezione Data -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Seleziona Data</label>
+                    <input type="date" class="form-control" id="date" name="date" 
+                           value="{{ selected_date.strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Filtra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiche -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-shopping-cart fa-2x text-success mb-2"></i>
+                    <h4 class="card-title">{{ sales|length }}</h4>
+                    <p class="card-text text-muted">Vendite del {{ selected_date.strftime('%d/%m/%Y') }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-euro-sign fa-2x text-success mb-2"></i>
+                    <h4 class="card-title">{{ "%.2f"|format(total_amount) }}€</h4>
+                    <p class="card-text text-muted">Totale Vendite</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabella Vendite -->
+    {% if sales %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Dettaglio Vendite - {{ selected_date.strftime('%d/%m/%Y') }}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Servizio</th>
+                            <th>Importo</th>
+                            <th>Metodo Pagamento</th>
+                            <th>Manager</th>
+                            <th>Ora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        <tr>
+                            <td>
+                                {% set customer = sale.customer_id %}
+                                Cliente #{{ customer }}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ get_service_display_name(sale.service_type) }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong class="text-success">{{ "%.2f"|format(sale.amount) }}€</strong>
+                            </td>
+                            <td>
+                                {% if sale.payment_method == 'cash' %}
+                                    <i class="fas fa-money-bill text-success me-1"></i>Contanti
+                                {% elif sale.payment_method == 'card' %}
+                                    <i class="fas fa-credit-card text-primary me-1"></i>Carta
+                                {% elif sale.payment_method == 'bank_transfer' %}
+                                    <i class="fas fa-university text-info me-1"></i>Bonifico
+                                {% else %}
+                                    {{ sale.payment_method or 'N/D' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <i class="fas fa-user me-1"></i>{{ sale.manager_username }}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ sale.created_at.strftime('%H:%M') }}
+                                </small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nessuna vendita per il {{ selected_date.strftime('%d/%m/%Y') }}</h5>
+        <p class="text-muted">Seleziona una data diversa o controlla che ci siano vendite registrate.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

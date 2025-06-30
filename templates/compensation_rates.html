@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Compensation Rates - Multi-Store Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-cog me-2"></i>Compensation Rates</h2>
+        <div class="btn-group">
+            <a href="{{ url_for('compensation.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+            <a href="{{ url_for('compensation.new_rate') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Rate
+            </a>
+        </div>
+    </div>
+
+    <!-- Period Selection -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="month" class="form-label">Month</label>
+                    <select class="form-select" id="month" name="month">
+                        {% for m in months %}
+                        <option value="{{ m }}" {{ 'selected' if month == m }}>
+                            {% set month_names = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 
+                                                  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'] %}
+                            {{ month_names[m-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year" name="year">
+                        {% for y in years %}
+                        <option value="{{ y }}" {{ 'selected' if year == y }}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-calendar me-1"></i>Update Period
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rates Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if rates %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Manager</th>
+                            <th>Service Type</th>
+                            <th>Base Rate</th>
+                            <th>Threshold</th>
+                            <th>Bonus Rate</th>
+                            <th>Store</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rate in rates %}
+                        <tr>
+                            <td>
+                                <strong>{{ rate.manager_username }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ rate.service_type.title() }}</span>
+                            </td>
+                            <td>
+                                <span class="text-success">€{{ "%.2f"|format(rate.base_rate) }}</span>
+                                <small class="text-muted d-block">per sale</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ rate.threshold }}</span>
+                                <small class="text-muted d-block">sales needed</small>
+                            </td>
+                            <td>
+                                <span class="text-warning">€{{ "%.2f"|format(rate.bonus_rate) }}</span>
+                                <small class="text-muted d-block">per bonus sale</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ current_store_name }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('compensation.edit_rate', id=rate.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('compensation.delete_rate', id=rate.id) }}" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('Are you sure you want to delete this compensation rate?')">
+                                        <button type="submit" class="btn btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-cog fa-3x text-muted mb-3"></i>
+                <h5>No Compensation Rates</h5>
+                <p class="text-muted">
+                    No compensation rates have been set for 
+                    {% set months = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'] %}
+                    {{ months[month-1] }} {{ year }}.<br>
+                    Create rates to define how managers are compensated for their sales.
+                </p>
+                <a href="{{ url_for('compensation.new_rate') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Add Compensation Rate
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if rates %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h6 class="card-title mb-0">
+                <i class="fas fa-info-circle me-2"></i>How Compensation Works
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Base Compensation</h6>
+                    <p class="text-muted small">
+                        Managers earn the base rate for each sale they make of the specified service type.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Bonus Compensation</h6>
+                    <p class="text-muted small">
+                        Once a manager reaches the threshold number of sales, they earn the bonus rate for each additional sale.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

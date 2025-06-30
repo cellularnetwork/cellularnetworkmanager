@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% set active_page = "customers" %}
+
+{% block title %}{% if offer %}Modifica{% else %}Nuova{% endif %} Offerta - {{ customer.first_name }} {{ customer.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>
+                        <i class="fas fa-tag me-2"></i>
+                        {% if offer %}Modifica Offerta{% else %}Nuova Offerta{% endif %}
+                    </h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('customers.index') }}">Clienti</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('customers.edit', id=customer.id) }}">{{ customer.first_name }} {{ customer.last_name }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('customer_offers.index', customer_id=customer.id) }}">Offerte</a></li>
+                            <li class="breadcrumb-item active">{% if offer %}Modifica{% else %}Nuova{% endif %}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="{{ url_for('customer_offers.index', customer_id=customer.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Torna alle Offerte
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Dettagli Offerta per {{ customer.first_name }} {{ customer.last_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <!-- Nome Offerta -->
+                            <div class="col-md-6 mb-3">
+                                <label for="offer_name" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>Nome Offerta *
+                                </label>
+                                <input type="text" class="form-control" id="offer_name" name="offer_name" 
+                                       value="{{ offer.offer_name if offer else '' }}" required
+                                       placeholder="es. Fibra 1GB, SIM WindTre">
+                                <div class="form-text">Nome descrittivo dell'offerta o servizio</div>
+                            </div>
+
+                            <!-- Tipo Offerta -->
+                            <div class="col-md-6 mb-3">
+                                <label for="offer_type" class="form-label">
+                                    <i class="fas fa-layer-group me-1"></i>Categoria *
+                                </label>
+                                <select class="form-select" id="offer_type" name="offer_type" required>
+                                    <option value="">Seleziona categoria</option>
+                                    <option value="Fibra" {% if offer and offer.offer_type == 'Fibra' %}selected{% endif %}>Fibra</option>
+                                    <option value="Mobile" {% if offer and offer.offer_type == 'Mobile' %}selected{% endif %}>Mobile/SIM</option>
+                                    <option value="Gas" {% if offer and offer.offer_type == 'Gas' %}selected{% endif %}>Gas</option>
+                                    <option value="Luce" {% if offer and offer.offer_type == 'Luce' %}selected{% endif %}>Luce</option>
+                                    <option value="Assicurazione" {% if offer and offer.offer_type == 'Assicurazione' %}selected{% endif %}>Assicurazione</option>
+                                    <option value="Finanziamento" {% if offer and offer.offer_type == 'Finanziamento' %}selected{% endif %}>Finanziamento</option>
+                                    <option value="Promozione" {% if offer and offer.offer_type == 'Promozione' %}selected{% endif %}>Promozione</option>
+                                    <option value="Altro" {% if offer and offer.offer_type == 'Altro' %}selected{% endif %}>Altro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Data Inizio -->
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">
+                                    <i class="fas fa-calendar-plus me-1"></i>Data Inizio
+                                </label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" 
+                                       value="{{ offer.start_date if offer else '' }}">
+                                <div class="form-text">Data di attivazione dell'offerta</div>
+                            </div>
+
+                            <!-- Data Scadenza -->
+                            <div class="col-md-6 mb-3">
+                                <label for="expiry_date" class="form-label">
+                                    <i class="fas fa-calendar-times me-1"></i>Data Scadenza *
+                                </label>
+                                <input type="date" class="form-control" id="expiry_date" name="expiry_date" 
+                                       value="{{ offer.expiry_date if offer else '' }}" required>
+                                <div class="form-text">Data di scadenza per le notifiche</div>
+                            </div>
+                        </div>
+
+                        <!-- Stato -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label">
+                                <i class="fas fa-toggle-on me-1"></i>Stato
+                            </label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="active" {% if not offer or offer.status == 'active' %}selected{% endif %}>Attiva</option>
+                                <option value="expired" {% if offer and offer.status == 'expired' %}selected{% endif %}>Scaduta</option>
+                                <option value="cancelled" {% if offer and offer.status == 'cancelled' %}selected{% endif %}>Annullata</option>
+                                <option value="pending" {% if offer and offer.status == 'pending' %}selected{% endif %}>In Attesa</option>
+                            </select>
+                        </div>
+
+                        <!-- Note -->
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Note
+                            </label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Dettagli aggiuntivi, condizioni, documenti necessari...">{{ offer.notes if offer else '' }}</textarea>
+                            <div class="form-text">Informazioni aggiuntive sull'offerta</div>
+                        </div>
+
+                        <!-- Pulsanti -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('customer_offers.index', customer_id=customer.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Annulla
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% if offer %}Aggiorna Offerta{% else %}Crea Offerta{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Suggerimenti -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Suggerimenti
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Esempi Nomi Offerte:</h6>
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-wifi me-1 text-info"></i> Fibra WindTre 1000 Mega</li>
+                                <li><i class="fas fa-mobile-alt me-1 text-success"></i> SIM Unlimited 50GB</li>
+                                <li><i class="fas fa-bolt me-1 text-warning"></i> Luce Enel Energia Casa</li>
+                                <li><i class="fas fa-fire me-1 text-danger"></i> Gas Eni Plenitude</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Gestione Scadenze:</h6>
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-bell me-1 text-info"></i> Notifiche 7 giorni prima</li>
+                                <li><i class="fas fa-calendar me-1 text-success"></i> Dashboard scadenze imminenti</li>
+                                <li><i class="fas fa-phone me-1 text-warning"></i> Promemoria chiamate clienti</li>
+                                <li><i class="fas fa-sync me-1 text-primary"></i> Rinnovi automatici</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-fill data inizio con oggi se non specificata
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.getElementById('start_date');
+    if (!startDate.value) {
+        const today = new Date().toISOString().split('T')[0];
+        startDate.value = today;
+    }
+    
+    // Suggerisci data scadenza 1 anno dopo inizio
+    const expiryDate = document.getElementById('expiry_date');
+    startDate.addEventListener('change', function() {
+        if (this.value && !expiryDate.value) {
+            const start = new Date(this.value);
+            start.setFullYear(start.getFullYear() + 1);
+            expiryDate.value = start.toISOString().split('T')[0];
+        }
+    });
+});
+</script>
+{% endblock %}

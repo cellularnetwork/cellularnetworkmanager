@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Compensation - Multi-Store Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-coins me-2"></i>Compensi {{ current_store_name }}</h2>
+        <div class="btn-group">
+            <a href="{{ url_for('compensation.rates') }}" class="btn btn-outline-primary">
+                <i class="fas fa-cog me-1"></i>Manage Rates
+            </a>
+            <a href="{{ url_for('compensation.new_rate') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Rate
+            </a>
+        </div>
+    </div>
+
+    <!-- Period Selection -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="month" class="form-label">Month</label>
+                    <select class="form-select" id="month" name="month">
+                        {% for m in months %}
+                        <option value="{{ m }}" {{ 'selected' if month == m }}>
+                            {% set month_names = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'] %}{{ month_names[m-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year" name="year">
+                        {% for y in years %}
+                        <option value="{{ y }}" {{ 'selected' if year == y }}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-calendar me-1"></i>Update Period
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Compensation Summary -->
+    {% if compensation_data %}
+    <div class="row">
+        {% for manager_data in compensation_data %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>{{ manager_data.manager_username }}
+                        <span class="badge bg-info ms-2">{{ manager_data.store_name }}</span>
+                    </h5>
+                    <div class="text-end">
+                        <h4 class="text-success mb-0">€{{ "%.2f"|format(manager_data.total) }}</h4>
+                        <small class="text-muted">Total Compensation</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Row -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h6 class="text-primary">€{{ "%.2f"|format(manager_data.total_base) }}</h6>
+                                <small class="text-muted">Base Compensation</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h6 class="text-warning">€{{ "%.2f"|format(manager_data.total_bonus) }}</h6>
+                                <small class="text-muted">Bonus Compensation</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Details -->
+                    {% if manager_data.details %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Sales</th>
+                                    <th>Base</th>
+                                    <th>Bonus</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for detail in manager_data.details %}
+                                <tr>
+                                    <td>
+                                        <small>{{ detail.service_type.title() }}</small>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {{ detail.sales_count }}
+                                            {% if detail.sales_count >= detail.threshold %}
+                                            <i class="fas fa-star text-warning" title="Bonus threshold reached"></i>
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td><small>€{{ "%.2f"|format(detail.base_compensation) }}</small></td>
+                                    <td><small>€{{ "%.2f"|format(detail.bonus_compensation) }}</small></td>
+                                    <td><small><strong>€{{ "%.2f"|format(detail.total_compensation) }}</strong></small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        No compensation rates defined for this period.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-coins fa-3x text-muted mb-3"></i>
+            <h5>No Compensation Data</h5>
+            <p class="text-muted">
+                Nessun compenso impostato per questo periodo.<br>
+                Set up compensation rates to start tracking manager earnings.
+            </p>
+            <a href="{{ url_for('compensation.new_rate') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Compensation Rate
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Add moment.js for date formatting if not already included
+if (typeof moment === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js';
+    document.head.appendChild(script);
+}
+</script>
+{% endblock %}
