@@ -1,11 +1,5 @@
-flask
-flask-sqlalchemy
-flask-login
-werkzeug
-gunicorn
-psycopg2-binary
-email-validator
-requests
-beautifulsoup4
-trafilatura
-sqlalchemy
+flask==3.0.0
+flask-sqlalchemy==3.1.1
+flask-login==0.6.3
+werkzeug==3.0.1
+email-validator==2.1.0
