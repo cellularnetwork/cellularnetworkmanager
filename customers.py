@@ -45,19 +45,16 @@ def index():
     for customer_data in customers_data:
         customer_dict = dict(customer_data)
         customer_dict['full_name'] = f"{customer_dict['first_name']} {customer_dict['last_name']}"
-
-        if customer_dict.get('birth_date') and isinstance(customer_dict['birth_date'], str):
+        if customer_dict.get('birth_date'):
             try:
                 customer_dict['birth_date'] = datetime.strptime(customer_dict['birth_date'], '%Y-%m-%d').date()
-            except ValueError:
+            except Exception:
                 pass
-
-        if customer_dict.get('offer_expiry_date') and isinstance(customer_dict['offer_expiry_date'], str):
+        if customer_dict.get('offer_expiry_date'):
             try:
                 customer_dict['offer_expiry_date'] = datetime.strptime(customer_dict['offer_expiry_date'], '%Y-%m-%d').date()
-            except ValueError:
+            except Exception:
                 pass
-
         customers_list.append(customer_dict)
 
     class SimplePagination:
@@ -248,3 +245,12 @@ def delete(id):
         if not customer:
             flash('Cliente non trovato!', 'error')
             return redirect(url_for('customers.index'))
+
+        store_session.delete(customer)
+        store_session.commit()
+        flash('Cliente eliminato con successo!', 'success')
+    except Exception as e:
+        flash(f'Errore durante l\'eliminazione: {str(e)}', 'error')
+    finally:
+        store_session.close()
+    return redirect(url_for('customers.index'))
