@@ -121,7 +121,6 @@ from compensation import compensation_bp
 from notifications import notifications_bp
 from reports import reports_bp
 from goals import goals_bp
-from sync_live_data import sync_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
@@ -133,7 +132,6 @@ app.register_blueprint(compensation_bp)
 app.register_blueprint(notifications_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(goals_bp)
-app.register_blueprint(sync_bp)
 
 # Import login_required per la route
 from flask_login import login_required
